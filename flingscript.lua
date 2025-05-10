@@ -1,11 +1,10 @@
 --[[
-    Ultra Fling Exploit with GUI for Roblox
+    MEGA FLING Exploit with GUI for Roblox
     Made for Exploit Executors like JJSploit, Synapse, etc.
     Features:
-     - One-click target selection from server player list
-     - ULTRA POWER fling that sends targets flying to the other side of the map
-     - Returns your character to the starting position when fling stops
-     - Modern GUI with easy-to-use controls
+     - ONE-SHOT super powerful fling that sends players to the moon in 1 second
+     - Player selection from server list
+     - Instant teleport back to origin point when done
      - Credit label "KILASIK"
 --]]
 
@@ -15,7 +14,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- GUI Creation
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "UltraFlingExploitGUI"
+ScreenGui.Name = "MegaFlingExploitGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.CoreGui
 
@@ -34,7 +33,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 Title.BorderSizePixel = 0
-Title.Text = "💥 ULTRA FLING EXPLOIT 💥"
+Title.Text = "💥 MEGA MOON FLING 💥"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
@@ -55,7 +54,7 @@ TargetDisplay.Parent = Frame
 -- Target selection button
 local SelectTargetButton = Instance.new("TextButton")
 local selectedTarget = nil
-local startPosition = nil  -- To store initial position
+local startPosition = nil
 
 SelectTargetButton.Position = UDim2.new(0, 10, 0, 70)
 SelectTargetButton.Size = UDim2.new(0, 280, 0, 35)
@@ -68,39 +67,27 @@ SelectTargetButton.TextSize = 16
 SelectTargetButton.Parent = Frame
 
 -- Start Button
-local StartButton = Instance.new("TextButton")
-StartButton.Position = UDim2.new(0, 10, 0, 115)
-StartButton.Size = UDim2.new(0, 280, 0, 45)
-StartButton.BackgroundColor3 = Color3.fromRGB(25, 145, 230)
-StartButton.BorderSizePixel = 0
-StartButton.Text = "🚀 START ULTRA FLING 🚀"
-StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-StartButton.Font = Enum.Font.GothamBold
-StartButton.TextSize = 18
-StartButton.Parent = Frame
+local MegaFlingButton = Instance.new("TextButton")
+MegaFlingButton.Position = UDim2.new(0, 10, 0, 115)
+MegaFlingButton.Size = UDim2.new(0, 280, 0, 60)
+MegaFlingButton.BackgroundColor3 = Color3.fromRGB(230, 30, 30)
+MegaFlingButton.BorderSizePixel = 0
+MegaFlingButton.Text = "🌑 MEGA MOON FLING 🌑"
+MegaFlingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MegaFlingButton.Font = Enum.Font.GothamBold
+MegaFlingButton.TextSize = 18
+MegaFlingButton.Parent = Frame
 
--- Stop Button
-local StopButton = Instance.new("TextButton")
-StopButton.Position = UDim2.new(0, 10, 0, 170)
-StopButton.Size = UDim2.new(0, 280, 0, 30)
-StopButton.BackgroundColor3 = Color3.fromRGB(180, 35, 35)
-StopButton.BorderSizePixel = 0
-StopButton.Text = "⛔ STOP FLING ⛔"
-StopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-StopButton.Font = Enum.Font.GothamBold
-StopButton.TextSize = 16
-StopButton.Parent = Frame
-
--- Credit Label (made much more prominent)
+-- Credit Label (full banner style)
 local CreditLabel = Instance.new("TextLabel")
-CreditLabel.Position = UDim2.new(0, 0, 1, -30)
-CreditLabel.Size = UDim2.new(1, 0, 0, 30)
+CreditLabel.Position = UDim2.new(0, 0, 1, -40)
+CreditLabel.Size = UDim2.new(1, 0, 0, 40)
 CreditLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 CreditLabel.BorderSizePixel = 0
 CreditLabel.Text = "KILASIK"
 CreditLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
 CreditLabel.Font = Enum.Font.GothamBold
-CreditLabel.TextSize = 18
+CreditLabel.TextSize = 22
 CreditLabel.TextXAlignment = Enum.TextXAlignment.Center
 CreditLabel.Parent = Frame
 
@@ -150,25 +137,13 @@ ScrollFrame.BorderSizePixel = 0
 ScrollFrame.ScrollBarThickness = 6
 ScrollFrame.Parent = PlayerSelectionFrame
 ScrollFrame.ZIndex = 11
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) -- Will be adjusted dynamically
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 -- Variables
-local flingRunning = false
-local flingConnection
+local isFlingActive = false
 local playerButtons = {}
 
 -- Utility functions
-local function getPlayerByName(name)
-    name = name or ""
-    for _, p in pairs(Players:GetPlayers()) do
-        if p.Name:lower() == name:lower() then
-            return p
-        end
-    end
-    return nil
-end
-
--- Player selection functions
 local function refreshPlayerList()
     -- Clear existing buttons
     for _, button in pairs(playerButtons) do
@@ -231,10 +206,10 @@ local function refreshPlayerList()
     ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 5)
 end
 
--- ULTRA POWER fling function - much stronger than before
-local function startUltraFling(targetPlayer)
-    if flingRunning then
-        TargetDisplay.Text = "Fling already running"
+-- THE MEGA MOON FLING FUNCTION - completely redesigned for maximum fling power
+local function executeMegaFling(targetPlayer)
+    if isFlingActive then
+        TargetDisplay.Text = "Wait until current fling completes"
         return
     end
     
@@ -243,135 +218,139 @@ local function startUltraFling(targetPlayer)
         return
     end
     
-    local targetHRP = targetPlayer.Character.HumanoidRootPart
-    local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local character = LocalPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
     
-    if not localHRP then
+    if not rootPart or not humanoid then
         TargetDisplay.Text = "Your character not ready"
         return
     end
-
-    -- Store start position
-    startPosition = localHRP.Position
     
-    flingRunning = true
-    TargetDisplay.Text = "ULTRA FLINGING: " .. targetPlayer.Name
-
-    -- Create BodyVelocity with MAXIMUM FORCE
-    local bv = Instance.new("BodyVelocity")
-    bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge) -- unlimited force
-    bv.P = 1e9                                                 -- maximum power
-    bv.Parent = localHRP
-
-    -- Create BodyAngularVelocity for EXTREME spinning
-    local bav = Instance.new("BodyAngularVelocity")
-    bav.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)  -- unlimited torque
-    bav.AngularVelocity = Vector3.new(500, 500, 500)              -- extreme spinning
-    bav.P = 1e9                                                    -- maximum power
-    bav.Parent = localHRP
-
-    -- Create BodyGyro to maintain better control
-    local bg = Instance.new("BodyGyro")
-    bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-    bg.P = 1e9
-    bg.Parent = localHRP
-
-    local lastPosition = targetHRP.Position
-    local velocityMultiplier = 50000  -- ULTRA HIGH value for extreme velocity
-
-    flingConnection = RunService.Heartbeat:Connect(function()
-        if
-            not flingRunning or
-            not targetHRP or
-            not targetHRP.Parent or
-            not localHRP or
-            not localHRP.Parent
-        then
-            flingConnection:Disconnect()
-            if bv and bv.Parent then bv:Destroy() end
-            if bav and bav.Parent then bav:Destroy() end
-            if bg and bg.Parent then bg:Destroy() end
-            
-            -- Return to start position when fling ends
-            if localHRP and startPosition then
-                localHRP.CFrame = CFrame.new(startPosition)
-            end
-            
-            flingRunning = false
-            TargetDisplay.Text = "Fling stopped - returned to start"
-            return
-        end
-
-        -- Track target even if they move
-        local targetPosition = targetHRP.Position
-        local moveDirection = (targetPosition - lastPosition).Unit
-        lastPosition = targetPosition
-
-        -- Set position very close to target for maximum impact
-        localHRP.CFrame = CFrame.new(targetPosition + Vector3.new(0, 3, 0))
-        
-        -- Apply extreme velocity toward target
-        bv.Velocity = moveDirection * velocityMultiplier
-        
-        -- Rapidly change spin direction for chaotic motion
-        bav.AngularVelocity = Vector3.new(
-            math.random(-500, 500), 
-            math.random(-500, 500), 
-            math.random(-500, 500)
-        )
-        
-        -- Focus gyro on target
-        bg.CFrame = CFrame.new(localHRP.Position, targetPosition)
-    end)
-end
-
-local function stopFling()
-    if not flingRunning then
-        TargetDisplay.Text = "No fling running"
+    isFlingActive = true
+    
+    -- Store starting position for return
+    startPosition = rootPart.CFrame
+    
+    -- Prevent dying during fling
+    local oldStateEnabled = {}
+    for i, state in pairs(Enum.HumanoidStateType:GetEnumItems()) do
+        oldStateEnabled[state] = humanoid:GetStateEnabled(state)
+        humanoid:SetStateEnabled(state, false)
+    end
+    
+    -- The only state we want active
+    humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
+    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    
+    -- Save old properties to restore later
+    local oldMaxForce = rootPart.MaxForce
+    local oldVelocity = rootPart.Velocity
+    local oldCanCollide = rootPart.CanCollide
+    local oldPosition = rootPart.Position
+    
+    -- Configure character for maximum fling
+    if character.PrimaryPart then
+        character.PrimaryPart.Anchored = false
+    end
+    
+    rootPart.CanCollide = false
+    
+    local targetRoot = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not targetRoot then
+        isFlingActive = false
+        TargetDisplay.Text = "Target has no HumanoidRootPart"
         return
     end
     
-    flingRunning = false
+    TargetDisplay.Text = "MEGA FLINGING: " .. targetPlayer.Name
     
-    if flingConnection then
-        flingConnection:Disconnect()
-        flingConnection = nil
-    end
+    -- Set up physics for extreme fling
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bodyVelocity.P = math.huge
     
-    local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if localHRP then
-        for _, inst in pairs(localHRP:GetChildren()) do
-            if inst:IsA("BodyVelocity") or inst:IsA("BodyAngularVelocity") or inst:IsA("BodyGyro") then
-                inst:Destroy()
+    local bodyAngularVelocity = Instance.new("BodyAngularVelocity")
+    bodyAngularVelocity.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    bodyAngularVelocity.P = math.huge
+    
+    -- The fling attack sequence
+    task.spawn(function()
+        -- Phase 1: Setup and attach
+        rootPart.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 0) -- Position directly on target
+        task.wait(0.1)
+        
+        -- Phase 2: Initial spin and compression (prepare for launch)
+        bodyAngularVelocity.AngularVelocity = Vector3.new(0, 99999, 0) -- Create a tornado effect
+        bodyAngularVelocity.Parent = rootPart
+        task.wait(0.1)
+        
+        -- Phase 3: MAXIMUM FLING - directly to the moon
+        -- We're going to create a massive upward force
+        local throwDirection = Vector3.new(
+            math.random(-10, 10) * 10000, -- Random X for spread
+            math.random(80, 100) * 10000,  -- Mostly UP for moon trajectory 
+            math.random(-10, 10) * 10000  -- Random Z for spread
+        )
+        
+        -- Apply the massive velocity - this is the main fling effect
+        bodyVelocity.Velocity = throwDirection
+        bodyVelocity.Parent = targetRoot -- Important: we attach to TARGET, not ourselves
+        
+        -- Add some chaotic spin to the target as they fly
+        local targetSpin = Instance.new("BodyAngularVelocity")
+        targetSpin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        targetSpin.AngularVelocity = Vector3.new(math.random(-20, 20), math.random(-20, 20), math.random(-20, 20))
+        targetSpin.P = 1000000
+        targetSpin.Parent = targetRoot
+        
+        -- Let the physics work for a moment
+        task.wait(0.2)
+        
+        -- Clean up our character
+        if rootPart and rootPart.Parent then
+            bodyAngularVelocity:Destroy()
+        end
+        
+        -- Wait slightly longer before cleaning up target
+        -- This ensures they continue flying for some time
+        task.wait(1)
+        
+        if targetRoot and targetRoot.Parent then
+            bodyVelocity:Destroy()
+            targetSpin:Destroy()
+        end
+        
+        -- Return to original position
+        if rootPart and rootPart.Parent and startPosition then
+            rootPart.CFrame = startPosition
+        end
+        
+        -- Restore humanoid states
+        for state, enabled in pairs(oldStateEnabled) do
+            if humanoid and humanoid.Parent then
+                humanoid:SetStateEnabled(state, enabled)
             end
         end
         
-        -- Return to start position
-        if startPosition then
-            localHRP.CFrame = CFrame.new(startPosition)
-        end
-    end
-    
-    TargetDisplay.Text = "Fling stopped - returned to start"
+        isFlingActive = false
+        TargetDisplay.Text = "Mega Fling Complete!"
+    end)
 end
 
 -- Button events
 SelectTargetButton.MouseButton1Click:Connect(function()
-    refreshPlayerList() -- Refresh the list when opening
+    refreshPlayerList()
     PlayerSelectionFrame.Visible = true
 end)
 
-StartButton.MouseButton1Click:Connect(function()
+MegaFlingButton.MouseButton1Click:Connect(function()
     if not selectedTarget then
         TargetDisplay.Text = "Please select a target first!"
         return
     end
     
-    startUltraFling(selectedTarget)
-end)
-
-StopButton.MouseButton1Click:Connect(function()
-    stopFling()
+    executeMegaFling(selectedTarget)
 end)
 
 -- Close button for player selection
@@ -391,28 +370,14 @@ Players.PlayerRemoving:Connect(function(player)
         refreshPlayerList()
     end
     
-    -- If the selected target left, clear selection
     if selectedTarget == player then
         selectedTarget = nil
         TargetDisplay.Text = "Selected Target: None"
-        if flingRunning then
-            stopFling()
-        end
     end
 end)
-
--- Cleanup on character reset, but keep GUI
-LocalPlayer.CharacterAdded:Connect(function()
-    if flingRunning then
-        stopFling()
-    end
-end)
-
--- Prevent character from dying during fling
-LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
 
 -- Initial refresh of player list
 refreshPlayerList()
 
 -- Display initial message
-TargetDisplay.Text = "Select a target to begin!"
+TargetDisplay.Text = "Select a target and send them to the MOON!"
