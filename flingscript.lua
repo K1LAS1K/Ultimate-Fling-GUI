@@ -1,13 +1,12 @@
 --[[
-    Enhanced Fling Exploit with GUI for Roblox
+    Super Fling Exploit with GUI for Roblox
     Made for Exploit Executors like JJSploit, Synapse, etc.
     Features:
-     - Select target player by name or from player list
-     - Adjustable fling power (50-10000)
-     - Start/Stop fling
-     - Modern GUI
-     - Clears text box on first focus
-     - Credit label "KILASIK" (clickable for player selection)
+     - Select target player from server player list
+     - Super high power range for extreme flinging (50-10000)
+     - Start/Stop fling with one click
+     - Modern GUI with player selection menu
+     - Credit label "KILASIK"
 --]]
 
 local Players = game:GetService("Players")
@@ -16,7 +15,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- GUI Creation
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "EnhancedFlingExploitGUI"
+ScreenGui.Name = "SuperFlingExploitGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.CoreGui
 
@@ -35,50 +34,42 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 Title.BorderSizePixel = 0
-Title.Text = "🛠️ Roblox Fling Exploit"
+Title.Text = "🔥 Super Fling Exploit"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
 Title.Parent = Frame
 
--- Target Label
-local TargetLabel = Instance.new("TextLabel")
-TargetLabel.Position = UDim2.new(0, 10, 0, 40)
-TargetLabel.Size = UDim2.new(0, 100, 0, 20)
-TargetLabel.BackgroundTransparency = 1
-TargetLabel.Text = "Target Player:"
-TargetLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-TargetLabel.Font = Enum.Font.Gotham
-TargetLabel.TextSize = 14
-TargetLabel.TextXAlignment = Enum.TextXAlignment.Left
-TargetLabel.Parent = Frame
+-- Target display label
+local TargetDisplay = Instance.new("TextLabel")
+TargetDisplay.Position = UDim2.new(0, 10, 0, 40)
+TargetDisplay.Size = UDim2.new(0, 280, 0, 20)
+TargetDisplay.BackgroundTransparency = 1
+TargetDisplay.Text = "Selected Target: None"
+TargetDisplay.TextColor3 = Color3.fromRGB(220, 220, 220)
+TargetDisplay.Font = Enum.Font.Gotham
+TargetDisplay.TextSize = 14
+TargetDisplay.TextXAlignment = Enum.TextXAlignment.Left
+TargetDisplay.Parent = Frame
 
--- Target TextBox
-local TargetBox = Instance.new("TextBox")
-TargetBox.Position = UDim2.new(0, 110, 0, 40)
-TargetBox.Size = UDim2.new(0, 180, 0, 25)
-TargetBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-TargetBox.BorderSizePixel = 0
-TargetBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-TargetBox.Font = Enum.Font.Gotham
-TargetBox.TextSize = 14
-TargetBox.PlaceholderText = "Enter player name or click KILASIK"
-TargetBox.ClearTextOnFocus = false
-TargetBox.Parent = Frame
+-- Target selection button
+local SelectTargetButton = Instance.new("TextButton")
+local selectedTarget = nil
 
--- Flag to clear text once on focus for TargetBox
-local targetBoxCleared = false
-TargetBox.Focused:Connect(function()
-    if not targetBoxCleared then
-        TargetBox.Text = ""
-        targetBoxCleared = true
-    end
-end)
+SelectTargetButton.Position = UDim2.new(0, 10, 0, 65)
+SelectTargetButton.Size = UDim2.new(0, 280, 0, 30)
+SelectTargetButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+SelectTargetButton.BorderSizePixel = 0
+SelectTargetButton.Text = "👉 Click to Select Target Player 👈"
+SelectTargetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SelectTargetButton.Font = Enum.Font.GothamBold
+SelectTargetButton.TextSize = 14
+SelectTargetButton.Parent = Frame
 
 -- Fling Power Label
 local PowerLabel = Instance.new("TextLabel")
-PowerLabel.Position = UDim2.new(0, 10, 0, 75)
-PowerLabel.Size = UDim2.new(0, 140, 0, 20)
+PowerLabel.Position = UDim2.new(0, 10, 0, 105)
+PowerLabel.Size = UDim2.new(0, 280, 0, 20)
 PowerLabel.BackgroundTransparency = 1
 PowerLabel.Text = "Fling Power (50-10000):"
 PowerLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
@@ -89,33 +80,25 @@ PowerLabel.Parent = Frame
 
 -- Fling Power TextBox
 local PowerBox = Instance.new("TextBox")
-PowerBox.Position = UDim2.new(0, 160, 0, 75)
-PowerBox.Size = UDim2.new(0, 130, 0, 25)
+PowerBox.Position = UDim2.new(0, 10, 0, 130)
+PowerBox.Size = UDim2.new(0, 280, 0, 30)
 PowerBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
 PowerBox.BorderSizePixel = 0
 PowerBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 PowerBox.Font = Enum.Font.Gotham
 PowerBox.TextSize = 14
-PowerBox.PlaceholderText = "1000"
-PowerBox.ClearTextOnFocus = false
+PowerBox.PlaceholderText = "5000"
+PowerBox.Text = "5000"
+PowerBox.ClearTextOnFocus = true
 PowerBox.Parent = Frame
-
--- Flag to clear text once on focus for PowerBox
-local powerBoxCleared = false
-PowerBox.Focused:Connect(function()
-    if not powerBoxCleared then
-        PowerBox.Text = ""
-        powerBoxCleared = true
-    end
-end)
 
 -- Start Button
 local StartButton = Instance.new("TextButton")
-StartButton.Position = UDim2.new(0, 10, 0, 120)
-StartButton.Size = UDim2.new(0, 135, 0, 35)
+StartButton.Position = UDim2.new(0, 10, 0, 170)
+StartButton.Size = UDim2.new(0, 135, 0, 40)
 StartButton.BackgroundColor3 = Color3.fromRGB(35, 150, 110)
 StartButton.BorderSizePixel = 0
-StartButton.Text = "Start Fling"
+StartButton.Text = "START FLING"
 StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 StartButton.Font = Enum.Font.GothamBold
 StartButton.TextSize = 16
@@ -123,11 +106,11 @@ StartButton.Parent = Frame
 
 -- Stop Button
 local StopButton = Instance.new("TextButton")
-StopButton.Position = UDim2.new(0, 155, 0, 120)
-StopButton.Size = UDim2.new(0, 135, 0, 35)
+StopButton.Position = UDim2.new(0, 155, 0, 170)
+StopButton.Size = UDim2.new(0, 135, 0, 40)
 StopButton.BackgroundColor3 = Color3.fromRGB(180, 35, 35)
 StopButton.BorderSizePixel = 0
-StopButton.Text = "Stop Fling"
+StopButton.Text = "STOP FLING"
 StopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 StopButton.Font = Enum.Font.GothamBold
 StopButton.TextSize = 16
@@ -135,8 +118,8 @@ StopButton.Parent = Frame
 
 -- Status Label
 local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Position = UDim2.new(0, 10, 0, 170)
-StatusLabel.Size = UDim2.new(1, -20, 0, 40)
+StatusLabel.Position = UDim2.new(0, 10, 0, 220)
+StatusLabel.Size = UDim2.new(1, -20, 0, 30)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = "Status: Idle"
 StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -145,22 +128,22 @@ StatusLabel.TextSize = 14
 StatusLabel.TextWrapped = true
 StatusLabel.Parent = Frame
 
--- Credit Label (now a button)
-local CreditButton = Instance.new("TextButton")
-CreditButton.Position = UDim2.new(0, 10, 1, -30)
-CreditButton.Size = UDim2.new(1, -20, 0, 20)
-CreditButton.BackgroundTransparency = 1
-CreditButton.Text = "Credit: KILASIK"
-CreditButton.TextColor3 = Color3.fromRGB(180, 180, 180)
-CreditButton.Font = Enum.Font.GothamItalic
-CreditButton.TextSize = 12
-CreditButton.TextXAlignment = Enum.TextXAlignment.Right
-CreditButton.Parent = Frame
+-- Credit Label
+local CreditLabel = Instance.new("TextLabel")
+CreditLabel.Position = UDim2.new(0, 10, 1, -30)
+CreditLabel.Size = UDim2.new(1, -20, 0, 20)
+CreditLabel.BackgroundTransparency = 1
+CreditLabel.Text = "KILASIK"
+CreditLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+CreditLabel.Font = Enum.Font.GothamBold
+CreditLabel.TextSize = 16
+CreditLabel.TextXAlignment = Enum.TextXAlignment.Center
+CreditLabel.Parent = Frame
 
 -- Player Selection GUI
 local PlayerSelectionFrame = Instance.new("Frame")
 PlayerSelectionFrame.Size = UDim2.new(0, 250, 0, 300)
-PlayerSelectionFrame.Position = UDim2.new(0.5, 170, 0.5, -150)
+PlayerSelectionFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
 PlayerSelectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 PlayerSelectionFrame.BorderSizePixel = 0
 PlayerSelectionFrame.Visible = false
@@ -223,7 +206,7 @@ end
 
 local function safeNumber(text, default)
     local n = tonumber(text)
-    if not n or n < 50 then return default or 1000 end
+    if not n or n < 50 then return default or 5000 end
     if n > 10000 then return 10000 end
     return n
 end
@@ -257,7 +240,8 @@ local function refreshPlayerList()
         -- On button click, select this player
         playerButton.MouseButton1Click:Connect(function()
             if player ~= LocalPlayer then
-                TargetBox.Text = player.Name
+                selectedTarget = player
+                TargetDisplay.Text = "Selected Target: " .. player.Name
                 PlayerSelectionFrame.Visible = false
             else
                 -- Can't target yourself
@@ -289,33 +273,37 @@ local function refreshPlayerList()
 end
 
 -- Main fling function
-local function startFling(targetName, power)
+local function startFling(targetPlayer, power)
     if flingRunning then
         StatusLabel.Text = "Fling already running."
         return
     end
-    local targetPlayer = getPlayerByName(targetName)
+    
     if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
         StatusLabel.Text = "Target player not found or no character."
         return
     end
+    
     local targetHRP = targetPlayer.Character.HumanoidRootPart
     local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    
     if not localHRP then
         StatusLabel.Text = "Your character not ready."
         return
     end
 
     flingRunning = true
-    StatusLabel.Text = "Fling started against " .. targetPlayer.Name .. " with power " .. power
+    StatusLabel.Text = "Flinging " .. targetPlayer.Name .. " with power " .. power
 
+    -- Create BodyVelocity
     local bv = Instance.new("BodyVelocity")
-    bv.MaxForce = Vector3.new(1e9, 1e9, 1e9) -- Increase max force for higher power
+    bv.MaxForce = Vector3.new(1e9, 1e9, 1e9) -- Increased force for better flinging
     bv.Parent = localHRP
 
+    -- Create BodyAngularVelocity for spinning
     local bav = Instance.new("BodyAngularVelocity")
-    bav.MaxTorque = Vector3.new(1e9, 1e9, 1e9) -- Increase max torque for higher power
-    bav.AngularVelocity = Vector3.new(power / 4, power / 4, power / 4)
+    bav.MaxTorque = Vector3.new(1e9, 1e9, 1e9) -- Increased torque
+    bav.AngularVelocity = Vector3.new(power/10, power/5, power/10)
     bav.Parent = localHRP
 
     local angle = 0
@@ -329,27 +317,27 @@ local function startFling(targetName, power)
             not localHRP.Parent
         then
             flingConnection:Disconnect()
-            bv:Destroy()
-            bav:Destroy()
+            if bv and bv.Parent then bv:Destroy() end
+            if bav and bav.Parent then bav:Destroy() end
             flingRunning = false
             StatusLabel.Text = "Fling stopped."
             return
         end
 
         -- Increase angle for circular motion
-        angle = angle + math.rad(power / 20) -- Adjusted for higher power values
+        angle = angle + math.rad(power / 10)
         if angle > math.rad(360) then
             angle = angle - math.rad(360)
         end
 
-        -- Calculate circular position around target
-        local radius = 5 + power / 200 -- Adjusted radius formula for higher power values
+        -- Calculate circular position around target with variable radius
+        local radius = 5 + math.sin(angle*3) * 2
         local offset = Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
 
-        -- Set local player's HumanoidRootPart CFrame to circle around target's HumanoidRootPart
+        -- Set player position and orientation
         localHRP.CFrame = CFrame.new(targetHRP.Position + offset) * CFrame.Angles(0, angle, 0)
 
-        -- Push toward target with some velocity force to try to interact
+        -- Apply velocity toward target for maximum impact
         bv.Velocity = (targetHRP.Position - localHRP.Position).Unit * power
     end)
 end
@@ -359,11 +347,14 @@ local function stopFling()
         StatusLabel.Text = "No fling running."
         return
     end
+    
     flingRunning = false
+    
     if flingConnection then
         flingConnection:Disconnect()
         flingConnection = nil
     end
+    
     local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if localHRP then
         for _, inst in pairs(localHRP:GetChildren()) do
@@ -372,28 +363,28 @@ local function stopFling()
             end
         end
     end
+    
     StatusLabel.Text = "Fling stopped."
 end
 
 -- Button events
+SelectTargetButton.MouseButton1Click:Connect(function()
+    refreshPlayerList() -- Refresh the list when opening
+    PlayerSelectionFrame.Visible = true
+end)
+
 StartButton.MouseButton1Click:Connect(function()
-    local targetName = TargetBox.Text
-    local power = safeNumber(PowerBox.Text, 1000)
-    if targetName == "" then
-        StatusLabel.Text = "Please enter a target player name."
+    if not selectedTarget then
+        StatusLabel.Text = "Please select a target player first!"
         return
     end
-    startFling(targetName, power)
+    
+    local power = safeNumber(PowerBox.Text, 5000)
+    startFling(selectedTarget, power)
 end)
 
 StopButton.MouseButton1Click:Connect(function()
     stopFling()
-end)
-
--- Credit button click shows player selection
-CreditButton.MouseButton1Click:Connect(function()
-    refreshPlayerList() -- Refresh the list when opening
-    PlayerSelectionFrame.Visible = true
 end)
 
 -- Close button for player selection
@@ -408,8 +399,25 @@ Players.PlayerAdded:Connect(function()
     end
 end)
 
-Players.PlayerRemoving:Connect(function()
+Players.PlayerRemoving:Connect(function(player)
     if PlayerSelectionFrame.Visible then
         refreshPlayerList()
     end
+    
+    -- If the selected target left, clear selection
+    if selectedTarget == player then
+        selectedTarget = nil
+        TargetDisplay.Text = "Selected Target: None"
+        if flingRunning then
+            stopFling()
+        end
+    end
 end)
+
+-- Cleanup GUI on character reset
+LocalPlayer.CharacterRemoving:Connect(function()
+    stopFling()
+end)
+
+-- Initial refresh of player list
+refreshPlayerList()
