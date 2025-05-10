@@ -1,107 +1,207 @@
---[[
-    MEGA FLING Exploit with GUI for Roblox
+-[[
+    ONE-CLICK SUPER FLING Exploit for Roblox
     Made for Exploit Executors like JJSploit, Synapse, etc.
-    Features:
-     - ONE-SHOT super powerful fling that sends players to the moon in 1 second
-     - Player selection from server list
-     - Instant teleport back to origin point when done
-     - Credit label "KILASIK"
+    Credit: KILASIK
+    
+    FEATURES:
+    - One-click instant super fling (no teleport required)
+    - Smart stop button (grayed out when not active)
+    - Player list for easy target selection
+    - Stays in your position while flinging target
+    - Close (X) button to exit the GUI
+    - Maximum power to send target very far away
 --]]
 
+-- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 -- GUI Creation
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MegaFlingExploitGUI"
+ScreenGui.Name = "SuperFlingExploitGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.CoreGui
 
 -- Main frame
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 300, 0, 250)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -125)
-Frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Frame.Size = UDim2.new(0, 300, 0, 220)
+Frame.Position = UDim2.new(0.5, -150, 0.5, -110)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Frame.BorderSizePixel = 0
 Frame.Parent = ScreenGui
 Frame.Active = true
 Frame.Draggable = true
 
+-- Create rounded corners
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = Frame
+
+-- Title bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = Frame
+
+-- Rounded corners for title bar
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 8)
+TitleCorner.Parent = TitleBar
+
+-- Fix the rounded corners on title bar (add a rectangle to fill bottom corners)
+local CornerFix = Instance.new("Frame")
+CornerFix.Size = UDim2.new(1, 0, 0, 10)
+CornerFix.Position = UDim2.new(0, 0, 1, -10)
+CornerFix.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+CornerFix.BorderSizePixel = 0
+CornerFix.ZIndex = 0
+CornerFix.Parent = TitleBar
+
 -- Title
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Title.BorderSizePixel = 0
-Title.Text = "💥 MEGA MOON FLING 💥"
+Title.Size = UDim2.new(1, -30, 1, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "💫 ONE-CLICK SUPER FLING 💫"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
-Title.Parent = Frame
+Title.TextSize = 16
+Title.Parent = TitleBar
 
--- Target display label
+-- Close button (X) for main GUI
+local CloseMainButton = Instance.new("TextButton")
+CloseMainButton.Position = UDim2.new(1, -25, 0, 5)
+CloseMainButton.Size = UDim2.new(0, 20, 0, 20)
+CloseMainButton.BackgroundColor3 = Color3.fromRGB(180, 35, 35)
+CloseMainButton.BorderSizePixel = 0
+CloseMainButton.Text = "X"
+CloseMainButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseMainButton.Font = Enum.Font.GothamBold
+CloseMainButton.TextSize = 14
+CloseMainButton.Parent = TitleBar
+CloseMainButton.ZIndex = 2
+
+-- Rounded corners for main close button
+local MainCloseCorner = Instance.new("UICorner") 
+MainCloseCorner.CornerRadius = UDim.new(0, 4)
+MainCloseCorner.Parent = CloseMainButton
+
+-- Target display
 local TargetDisplay = Instance.new("TextLabel")
-TargetDisplay.Position = UDim2.new(0, 10, 0, 40)
-TargetDisplay.Size = UDim2.new(0, 280, 0, 25)
+TargetDisplay.Position = UDim2.new(0, 15, 0, 40)
+TargetDisplay.Size = UDim2.new(1, -30, 0, 25)
 TargetDisplay.BackgroundTransparency = 1
-TargetDisplay.Text = "Selected Target: None"
+TargetDisplay.Text = "Target: None Selected"
 TargetDisplay.TextColor3 = Color3.fromRGB(220, 220, 220)
 TargetDisplay.Font = Enum.Font.Gotham
 TargetDisplay.TextSize = 14
 TargetDisplay.TextXAlignment = Enum.TextXAlignment.Left
 TargetDisplay.Parent = Frame
 
--- Target selection button
+-- Select Target Button
 local SelectTargetButton = Instance.new("TextButton")
 local selectedTarget = nil
-local startPosition = nil
+local flingActive = false
 
-SelectTargetButton.Position = UDim2.new(0, 10, 0, 70)
-SelectTargetButton.Size = UDim2.new(0, 280, 0, 35)
-SelectTargetButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+SelectTargetButton.Position = UDim2.new(0, 15, 0, 70)
+SelectTargetButton.Size = UDim2.new(1, -30, 0, 35)
+SelectTargetButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 SelectTargetButton.BorderSizePixel = 0
-SelectTargetButton.Text = "👉 SELECT TARGET PLAYER 👈"
+SelectTargetButton.Text = "👉 SELECT TARGET 👈"
 SelectTargetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SelectTargetButton.Font = Enum.Font.GothamBold
-SelectTargetButton.TextSize = 16
+SelectTargetButton.Font = Enum.Font.GothamSemibold
+SelectTargetButton.TextSize = 15
 SelectTargetButton.Parent = Frame
 
--- Start Button
-local MegaFlingButton = Instance.new("TextButton")
-MegaFlingButton.Position = UDim2.new(0, 10, 0, 115)
-MegaFlingButton.Size = UDim2.new(0, 280, 0, 60)
-MegaFlingButton.BackgroundColor3 = Color3.fromRGB(230, 30, 30)
-MegaFlingButton.BorderSizePixel = 0
-MegaFlingButton.Text = "🌑 MEGA MOON FLING 🌑"
-MegaFlingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-MegaFlingButton.Font = Enum.Font.GothamBold
-MegaFlingButton.TextSize = 18
-MegaFlingButton.Parent = Frame
+-- Rounded corners for select button
+local SelectButtonCorner = Instance.new("UICorner")
+SelectButtonCorner.CornerRadius = UDim.new(0, 6)
+SelectButtonCorner.Parent = SelectTargetButton
 
--- Credit Label (full banner style)
+-- Super Fling Button
+local FlingButton = Instance.new("TextButton")
+FlingButton.Position = UDim2.new(0, 15, 0, 115)
+FlingButton.Size = UDim2.new(1, -30, 0, 40)
+FlingButton.BackgroundColor3 = Color3.fromRGB(230, 30, 30)
+FlingButton.BorderSizePixel = 0
+FlingButton.Text = "🚀 SUPER FLING NOW! 🚀"
+FlingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+FlingButton.Font = Enum.Font.GothamBold
+FlingButton.TextSize = 16
+FlingButton.Parent = Frame
+
+-- Rounded corners for fling button
+local FlingButtonCorner = Instance.new("UICorner")
+FlingButtonCorner.CornerRadius = UDim.new(0, 6)
+FlingButtonCorner.Parent = FlingButton
+
+-- Stop Button (starting as gray/disabled)
+local StopButton = Instance.new("TextButton")
+StopButton.Position = UDim2.new(0, 15, 0, 165)
+StopButton.Size = UDim2.new(1, -30, 0, 30)
+StopButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80) -- Gray when disabled
+StopButton.BorderSizePixel = 0
+StopButton.Text = "⛔ STOP FLING ⛔"
+StopButton.TextColor3 = Color3.fromRGB(180, 180, 180) -- Lighter gray text when disabled
+StopButton.Font = Enum.Font.GothamSemibold
+StopButton.TextSize = 14
+StopButton.Parent = Frame
+StopButton.AutoButtonColor = false -- Disable the button effect when inactive
+
+-- Rounded corners for stop button
+local StopButtonCorner = Instance.new("UICorner")
+StopButtonCorner.CornerRadius = UDim.new(0, 6)
+StopButtonCorner.Parent = StopButton
+
+-- Credit Label (floating at the bottom of the screen, not in the frame)
 local CreditLabel = Instance.new("TextLabel")
-CreditLabel.Position = UDim2.new(0, 0, 1, -40)
-CreditLabel.Size = UDim2.new(1, 0, 0, 40)
+CreditLabel.Position = UDim2.new(0.5, -100, 1, -40)
+CreditLabel.Size = UDim2.new(0, 200, 0, 30)
 CreditLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 CreditLabel.BorderSizePixel = 0
 CreditLabel.Text = "KILASIK"
-CreditLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+CreditLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
 CreditLabel.Font = Enum.Font.GothamBold
-CreditLabel.TextSize = 22
-CreditLabel.TextXAlignment = Enum.TextXAlignment.Center
-CreditLabel.Parent = Frame
+CreditLabel.TextSize = 20
+CreditLabel.Parent = ScreenGui
+
+-- Rounded corners for credit label
+local CreditCorner = Instance.new("UICorner")
+CreditCorner.CornerRadius = UDim.new(0, 15) -- More rounded
+CreditCorner.Parent = CreditLabel
+
+-- Shadow effect for credit
+local CreditShadow = Instance.new("Frame")
+CreditShadow.Position = UDim2.new(0, 2, 0, 2)
+CreditShadow.Size = UDim2.new(1, 0, 1, 0)
+CreditShadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+CreditShadow.BackgroundTransparency = 0.6
+CreditShadow.BorderSizePixel = 0
+CreditShadow.ZIndex = -1
+CreditShadow.Parent = CreditLabel
+
+-- Rounded corners for shadow
+local ShadowCorner = Instance.new("UICorner")
+ShadowCorner.CornerRadius = UDim.new(0, 15)
+ShadowCorner.Parent = CreditShadow
 
 -- Player Selection GUI
 local PlayerSelectionFrame = Instance.new("Frame")
 PlayerSelectionFrame.Size = UDim2.new(0, 250, 0, 300)
 PlayerSelectionFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
-PlayerSelectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+PlayerSelectionFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 PlayerSelectionFrame.BorderSizePixel = 0
 PlayerSelectionFrame.Visible = false
 PlayerSelectionFrame.Parent = ScreenGui
 PlayerSelectionFrame.ZIndex = 10
 PlayerSelectionFrame.Active = true
 PlayerSelectionFrame.Draggable = true
+
+-- Rounded corners for player selection frame
+local SelectionFrameCorner = Instance.new("UICorner")
+SelectionFrameCorner.CornerRadius = UDim.new(0, 8)
+SelectionFrameCorner.Parent = PlayerSelectionFrame
 
 -- Selection Title
 local SelectionTitle = Instance.new("TextLabel")
@@ -111,9 +211,23 @@ SelectionTitle.BorderSizePixel = 0
 SelectionTitle.Text = "Select Player To Fling"
 SelectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 SelectionTitle.Font = Enum.Font.GothamBold
-SelectionTitle.TextSize = 16
+SelectionTitle.TextSize = 15
 SelectionTitle.Parent = PlayerSelectionFrame
 SelectionTitle.ZIndex = 11
+
+-- Rounded corners for selection title
+local SelectionTitleCorner = Instance.new("UICorner")
+SelectionTitleCorner.CornerRadius = UDim.new(0, 8)
+SelectionTitleCorner.Parent = SelectionTitle
+
+-- Corner fix for selection title
+local SelectionCornerFix = Instance.new("Frame")
+SelectionCornerFix.Size = UDim2.new(1, 0, 0, 10)
+SelectionCornerFix.Position = UDim2.new(0, 0, 1, -10)
+SelectionCornerFix.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+SelectionCornerFix.BorderSizePixel = 0
+SelectionCornerFix.ZIndex = 10
+SelectionCornerFix.Parent = SelectionTitle
 
 -- Close button for player selection
 local CloseButton = Instance.new("TextButton")
@@ -128,234 +242,253 @@ CloseButton.TextSize = 14
 CloseButton.Parent = SelectionTitle
 CloseButton.ZIndex = 12
 
+-- Rounded corners for close button
+local CloseButtonCorner = Instance.new("UICorner")
+CloseButtonCorner.CornerRadius = UDim.new(0, 4)
+CloseButtonCorner.Parent = CloseButton
+
 -- Player list scroll frame
 local ScrollFrame = Instance.new("ScrollingFrame")
 ScrollFrame.Position = UDim2.new(0, 5, 0, 35)
 ScrollFrame.Size = UDim2.new(1, -10, 1, -40)
-ScrollFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ScrollFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 ScrollFrame.BorderSizePixel = 0
 ScrollFrame.ScrollBarThickness = 6
 ScrollFrame.Parent = PlayerSelectionFrame
 ScrollFrame.ZIndex = 11
 ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 
--- Variables
-local isFlingActive = false
-local playerButtons = {}
+-- Rounded corners for scroll frame
+local ScrollFrameCorner = Instance.new("UICorner")
+ScrollFrameCorner.CornerRadius = UDim.new(0, 6)
+ScrollFrameCorner.Parent = ScrollFrame
 
--- Utility functions
+-- Variables
+local playerButtons = {}
+local flingAttachment = nil
+local targetConnection = nil
+
+-- Function to update Stop button appearance
+local function updateStopButton()
+    if flingActive then
+        -- Enabled state
+        StopButton.BackgroundColor3 = Color3.fromRGB(180, 35, 35) -- Red
+        StopButton.TextColor3 = Color3.fromRGB(255, 255, 255) -- White
+        StopButton.AutoButtonColor = true -- Enable button effect
+    else
+        -- Disabled state
+        StopButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80) -- Gray
+        StopButton.TextColor3 = Color3.fromRGB(180, 180, 180) -- Light gray
+        StopButton.AutoButtonColor = false -- Disable button effect
+    end
+end
+
+-- Function to refresh player list
 local function refreshPlayerList()
-    -- Clear existing buttons
     for _, button in pairs(playerButtons) do
         button:Destroy()
     end
     playerButtons = {}
     
-    -- Add buttons for each player
     local yPos = 5
     local playerList = Players:GetPlayers()
     table.sort(playerList, function(a, b) return a.Name:lower() < b.Name:lower() end)
     
     for i, player in ipairs(playerList) do
-        local playerButton = Instance.new("TextButton")
-        playerButton.Position = UDim2.new(0, 5, 0, yPos)
-        playerButton.Size = UDim2.new(1, -10, 0, 30)
-        playerButton.BackgroundColor3 = (player == LocalPlayer) and Color3.fromRGB(70, 70, 100) or Color3.fromRGB(60, 60, 60)
-        playerButton.BorderSizePixel = 0
-        playerButton.Text = player.Name
-        playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        playerButton.Font = Enum.Font.Gotham
-        playerButton.TextSize = 14
-        playerButton.Parent = ScrollFrame
-        playerButton.ZIndex = 12
-        
-        -- On button click, select this player
-        playerButton.MouseButton1Click:Connect(function()
-            if player ~= LocalPlayer then
+        if player ~= LocalPlayer then -- Don't show yourself in the list
+            local playerButton = Instance.new("TextButton")
+            playerButton.Position = UDim2.new(0, 5, 0, yPos)
+            playerButton.Size = UDim2.new(1, -10, 0, 30)
+            playerButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            playerButton.BorderSizePixel = 0
+            playerButton.Text = player.Name
+            playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            playerButton.Font = Enum.Font.Gotham
+            playerButton.TextSize = 14
+            playerButton.Parent = ScrollFrame
+            playerButton.ZIndex = 12
+            
+            -- Rounded corners for player buttons
+            local playerButtonCorner = Instance.new("UICorner")
+            playerButtonCorner.CornerRadius = UDim.new(0, 4)
+            playerButtonCorner.Parent = playerButton
+            
+            -- Select player on click
+            playerButton.MouseButton1Click:Connect(function()
                 selectedTarget = player
-                TargetDisplay.Text = "Selected Target: " .. player.Name
+                TargetDisplay.Text = "Target: " .. player.Name
                 PlayerSelectionFrame.Visible = false
-            else
-                -- Can't target yourself
-                TargetDisplay.Text = "❌ You can't target yourself!"
-                wait(1)
-                TargetDisplay.Text = "Selected Target: None"
-            end
-        end)
-        
-        -- Highlight on hover
-        playerButton.MouseEnter:Connect(function()
-            if player ~= LocalPlayer then
-                playerButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            end
-        end)
-        
-        playerButton.MouseLeave:Connect(function()
-            if player ~= LocalPlayer then
-                playerButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            else
-                playerButton.BackgroundColor3 = Color3.fromRGB(70, 70, 100)
-            end
-        end)
-        
-        table.insert(playerButtons, playerButton)
-        yPos = yPos + 35
+            end)
+            
+            -- Highlight on hover
+            playerButton.MouseEnter:Connect(function()
+                playerButton.BackgroundColor3 = Color3.fromRGB(75, 75, 75)
+            end)
+            
+            playerButton.MouseLeave:Connect(function()
+                playerButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            end)
+            
+            table.insert(playerButtons, playerButton)
+            yPos = yPos + 35
+        end
     end
     
-    -- Update scroll frame canvas size
     ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 5)
 end
 
--- THE MEGA MOON FLING FUNCTION - completely redesigned for maximum fling power
-local function executeMegaFling(targetPlayer)
-    if isFlingActive then
-        TargetDisplay.Text = "Wait until current fling completes"
+-- Function to stop flinging
+local function stopFling()
+    if not flingActive then return end
+    
+    flingActive = false
+    updateStopButton()
+    
+    if targetConnection then
+        targetConnection:Disconnect()
+        targetConnection = nil
+    end
+    
+    local character = LocalPlayer.Character
+    if character then
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+            
+            if part:IsA("BodyAngularVelocity") or part:IsA("BodyVelocity") then
+                part:Destroy()
+            end
+        end
+    end
+    
+    TargetDisplay.Text = "Target: " .. (selectedTarget and selectedTarget.Name or "None") .. " (Fling Stopped)"
+end
+
+-- SUPER FLING FUNCTION - direct method that doesn't teleport you
+local function executeSuperFling()
+    if flingActive then
+        TargetDisplay.Text = "Already flinging! Stop first."
         return
     end
     
-    if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        TargetDisplay.Text = "Target player not found!"
+    if not selectedTarget then
+        TargetDisplay.Text = "No target selected!"
+        return
+    end
+    
+    local targetPlayer = selectedTarget
+    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        TargetDisplay.Text = "Target character not found!"
         return
     end
     
     local character = LocalPlayer.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-    
-    if not rootPart or not humanoid then
-        TargetDisplay.Text = "Your character not ready"
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        TargetDisplay.Text = "Your character not ready!"
         return
     end
     
-    isFlingActive = true
+    -- Set up for flinging
+    flingActive = true
+    updateStopButton()
+    TargetDisplay.Text = "FLINGING: " .. targetPlayer.Name
     
-    -- Store starting position for return
-    startPosition = rootPart.CFrame
-    
-    -- Prevent dying during fling
-    local oldStateEnabled = {}
-    for i, state in pairs(Enum.HumanoidStateType:GetEnumItems()) do
-        oldStateEnabled[state] = humanoid:GetStateEnabled(state)
-        humanoid:SetStateEnabled(state, false)
+    -- Make our character parts non-collidable to prevent flinging ourselves
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
     end
     
-    -- The only state we want active
-    humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
-    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    -- Create the rocket launcher (invisible force that launches target)
+    local targetRoot = targetPlayer.Character.HumanoidRootPart
+    local launchForce = Instance.new("BodyVelocity")
+    launchForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    launchForce.P = math.huge
     
-    -- Save old properties to restore later
-    local oldMaxForce = rootPart.MaxForce
-    local oldVelocity = rootPart.Velocity
-    local oldCanCollide = rootPart.CanCollide
-    local oldPosition = rootPart.Position
+    -- Direction to fling - extremely powerful upward and in a random horizontal direction
+    local direction = Vector3.new(
+        math.random(-100, 100), 
+        math.random(500, 1000), -- Heavy upward force
+        math.random(-100, 100)
+    ).Unit * 9999999 -- Maximum force
     
-    -- Configure character for maximum fling
-    if character.PrimaryPart then
-        character.PrimaryPart.Anchored = false
-    end
+    launchForce.Velocity = direction
+    launchForce.Parent = targetRoot
     
-    rootPart.CanCollide = false
+    -- Add spin for more dramatic effect
+    local spinForce = Instance.new("BodyAngularVelocity")
+    spinForce.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    spinForce.AngularVelocity = Vector3.new(
+        math.random(-50, 50),
+        math.random(-50, 50),
+        math.random(-50, 50)
+    )
+    spinForce.P = math.huge
+    spinForce.Parent = targetRoot
     
-    local targetRoot = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not targetRoot then
-        isFlingActive = false
-        TargetDisplay.Text = "Target has no HumanoidRootPart"
-        return
-    end
-    
-    TargetDisplay.Text = "MEGA FLINGING: " .. targetPlayer.Name
-    
-    -- Set up physics for extreme fling
-    local bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    bodyVelocity.P = math.huge
-    
-    local bodyAngularVelocity = Instance.new("BodyAngularVelocity")
-    bodyAngularVelocity.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-    bodyAngularVelocity.P = math.huge
-    
-    -- The fling attack sequence
-    task.spawn(function()
-        -- Phase 1: Setup and attach
-        rootPart.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 0) -- Position directly on target
-        task.wait(0.1)
-        
-        -- Phase 2: Initial spin and compression (prepare for launch)
-        bodyAngularVelocity.AngularVelocity = Vector3.new(0, 99999, 0) -- Create a tornado effect
-        bodyAngularVelocity.Parent = rootPart
-        task.wait(0.1)
-        
-        -- Phase 3: MAXIMUM FLING - directly to the moon
-        -- We're going to create a massive upward force
-        local throwDirection = Vector3.new(
-            math.random(-10, 10) * 10000, -- Random X for spread
-            math.random(80, 100) * 10000,  -- Mostly UP for moon trajectory 
-            math.random(-10, 10) * 10000  -- Random Z for spread
-        )
-        
-        -- Apply the massive velocity - this is the main fling effect
-        bodyVelocity.Velocity = throwDirection
-        bodyVelocity.Parent = targetRoot -- Important: we attach to TARGET, not ourselves
-        
-        -- Add some chaotic spin to the target as they fly
-        local targetSpin = Instance.new("BodyAngularVelocity")
-        targetSpin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-        targetSpin.AngularVelocity = Vector3.new(math.random(-20, 20), math.random(-20, 20), math.random(-20, 20))
-        targetSpin.P = 1000000
-        targetSpin.Parent = targetRoot
-        
-        -- Let the physics work for a moment
-        task.wait(0.2)
-        
-        -- Clean up our character
-        if rootPart and rootPart.Parent then
-            bodyAngularVelocity:Destroy()
+    -- Create a connection to track when target is far enough away
+    local startPos = targetRoot.Position
+    targetConnection = RunService.Heartbeat:Connect(function()
+        if not flingActive then
+            return
         end
         
-        -- Wait slightly longer before cleaning up target
-        -- This ensures they continue flying for some time
-        task.wait(1)
-        
-        if targetRoot and targetRoot.Parent then
-            bodyVelocity:Destroy()
-            targetSpin:Destroy()
+        -- Check if target still exists
+        if not targetPlayer or not targetPlayer.Character or
+           not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            stopFling()
+            return
         end
         
-        -- Return to original position
-        if rootPart and rootPart.Parent and startPosition then
-            rootPart.CFrame = startPosition
-        end
-        
-        -- Restore humanoid states
-        for state, enabled in pairs(oldStateEnabled) do
-            if humanoid and humanoid.Parent then
-                humanoid:SetStateEnabled(state, enabled)
+        -- Check if target has gone far enough away
+        local distance = (targetRoot.Position - startPos).Magnitude
+        if distance > 500 then -- If target has gone at least 500 studs away
+            -- They're gone! Clean up
+            if launchForce and launchForce.Parent then
+                launchForce:Destroy()
             end
+            
+            if spinForce and spinForce.Parent then
+                spinForce:Destroy()
+            end
+            
+            stopFling()
+            TargetDisplay.Text = "Target sent flying successfully!"
         end
-        
-        isFlingActive = false
-        TargetDisplay.Text = "Mega Fling Complete!"
+    end)
+    
+    -- Backup cleanup after 10 seconds in case distance check never triggers
+    spawn(function()
+        wait(10)
+        if flingActive then
+            stopFling()
+        end
     end)
 end
 
--- Button events
+-- Button event connections
 SelectTargetButton.MouseButton1Click:Connect(function()
     refreshPlayerList()
     PlayerSelectionFrame.Visible = true
 end)
 
-MegaFlingButton.MouseButton1Click:Connect(function()
-    if not selectedTarget then
-        TargetDisplay.Text = "Please select a target first!"
-        return
+FlingButton.MouseButton1Click:Connect(executeSuperFling)
+
+StopButton.MouseButton1Click:Connect(function()
+    if flingActive then
+        stopFling()
     end
-    
-    executeMegaFling(selectedTarget)
 end)
 
--- Close button for player selection
 CloseButton.MouseButton1Click:Connect(function()
     PlayerSelectionFrame.Visible = false
+end)
+
+-- Main GUI close button
+CloseMainButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
 end)
 
 -- Player added/removed events
@@ -372,12 +505,19 @@ Players.PlayerRemoving:Connect(function(player)
     
     if selectedTarget == player then
         selectedTarget = nil
-        TargetDisplay.Text = "Selected Target: None"
+        TargetDisplay.Text = "Target: None (Player Left)"
+        
+        if flingActive then
+            stopFling()
+        end
     end
 end)
+
+-- Initialize stop button as disabled
+updateStopButton()
 
 -- Initial refresh of player list
 refreshPlayerList()
 
--- Display initial message
-TargetDisplay.Text = "Select a target and send them to the MOON!"
+-- Show welcome message
+TargetDisplay.Text = "Select a target to begin!"
