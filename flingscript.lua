@@ -1,442 +1,492 @@
 --[[
-KILASIK's Ultimate Fling GUI
-Multi-target, continuous flinging with advanced GUI
+    KILASIK's Multi-Target Fling Exploit
+    Based on the working fling mechanism from zqyDSUWX
+    Features:
+    - Select multiple targets
+    - Continuous flinging until stopped
+    - Preserves player mobility (no teleporting to targets)
+    - Flings targets very far
+    - Compatible with JJSploit, Synapse X, etc.
 ]]
--- Get services
+-- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
--- Create GUI
+local Player = Players.LocalPlayer
+-- GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "UltimateFlingGUI"
-ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Name = "KilasikFlingGUI"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("CoreGui")
 -- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 300, 0, 350)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -175)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
-MainFrame.Size = UDim2.new(0, 300, 0, 300)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
--- Top Bar
-local TopBar = Instance.new("Frame")
-TopBar.Name = "TopBar"
-TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-TopBar.BorderSizePixel = 0
-TopBar.Size = UDim2.new(1, 0, 0, 30)
-TopBar.Parent = MainFrame
+-- Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
 -- Title
 local Title = Instance.new("TextLabel")
-Title.Name = "Title"
+Title.Size = UDim2.new(1, -30, 1, 0)
 Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Size = UDim2.new(1, -50, 1, 0)
-Title.Font = Enum.Font.SourceSansBold
-Title.Text = "KILASIK's Ultimate Fling GUI"
+Title.Text = "KILASIK'S MULTI-FLING"
 Title.TextColor3 = Color3.fromRGB(255, 80, 80)
-Title.TextSize = 16
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TopBar
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+Title.Parent = TitleBar
 -- Close Button
 local CloseButton = Instance.new("TextButton")
-CloseButton.Name = "CloseButton"
-CloseButton.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
-CloseButton.BorderSizePixel = 0
 CloseButton.Position = UDim2.new(1, -30, 0, 0)
-CloseButton.Size = UDim2.new(0, 30, 1, 0)
-CloseButton.Font = Enum.Font.SourceSansBold
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+CloseButton.BorderSizePixel = 0
 CloseButton.Text = "X"
 CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.SourceSansBold
 CloseButton.TextSize = 18
-CloseButton.Parent = TopBar
+CloseButton.Parent = TitleBar
 -- Status Label
 local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Name = "StatusLabel"
-StatusLabel.BackgroundTransparency = 1
 StatusLabel.Position = UDim2.new(0, 10, 0, 40)
-StatusLabel.Size = UDim2.new(1, -20, 0, 20)
-StatusLabel.Font = Enum.Font.SourceSans
-StatusLabel.Text = "Select players to fling"
+StatusLabel.Size = UDim2.new(1, -20, 0, 25)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Select targets to fling"
 StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-StatusLabel.TextSize = 14
+StatusLabel.Font = Enum.Font.SourceSans
+StatusLabel.TextSize = 16
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.Parent = MainFrame
--- Player List Frame
-local PlayerListFrame = Instance.new("Frame")
-PlayerListFrame.Name = "PlayerListFrame"
-PlayerListFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-PlayerListFrame.BorderSizePixel = 0
-PlayerListFrame.Position = UDim2.new(0, 10, 0, 70)
-PlayerListFrame.Size = UDim2.new(1, -20, 0, 160)
-PlayerListFrame.Parent = MainFrame
--- Player Scroll
-local PlayerScroll = Instance.new("ScrollingFrame")
-PlayerScroll.Name = "PlayerScroll"
-PlayerScroll.BackgroundTransparency = 1
-PlayerScroll.BorderSizePixel = 0
-PlayerScroll.Position = UDim2.new(0, 5, 0, 5)
-PlayerScroll.Size = UDim2.new(1, -10, 1, -10)
-PlayerScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-PlayerScroll.ScrollBarThickness = 6
-PlayerScroll.Parent = PlayerListFrame
--- Fling Button
-local FlingButton = Instance.new("TextButton")
-FlingButton.Name = "FlingButton"
-FlingButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
-FlingButton.BorderSizePixel = 0
-FlingButton.Position = UDim2.new(0, 10, 0, 240)
-FlingButton.Size = UDim2.new(0.5, -15, 0, 40)
-FlingButton.Font = Enum.Font.SourceSansBold
-FlingButton.Text = "START FLING"
-FlingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-FlingButton.TextSize = 16
-FlingButton.Parent = MainFrame
--- Stop Button
+-- Player Selection Frame
+local SelectionFrame = Instance.new("Frame")
+SelectionFrame.Position = UDim2.new(0, 10, 0, 70)
+SelectionFrame.Size = UDim2.new(1, -20, 0, 200)
+SelectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+SelectionFrame.BorderSizePixel = 0
+SelectionFrame.Parent = MainFrame
+-- Player List ScrollFrame
+local PlayerScrollFrame = Instance.new("ScrollingFrame")
+PlayerScrollFrame.Position = UDim2.new(0, 5, 0, 5)
+PlayerScrollFrame.Size = UDim2.new(1, -10, 1, -10)
+PlayerScrollFrame.BackgroundTransparency = 1
+PlayerScrollFrame.BorderSizePixel = 0
+PlayerScrollFrame.ScrollBarThickness = 6
+PlayerScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+PlayerScrollFrame.Parent = SelectionFrame
+-- Start Fling Button
+local StartButton = Instance.new("TextButton")
+StartButton.Position = UDim2.new(0, 10, 0, 280)
+StartButton.Size = UDim2.new(0.5, -15, 0, 40)
+StartButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
+StartButton.BorderSizePixel = 0
+StartButton.Text = "START FLING"
+StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+StartButton.Font = Enum.Font.SourceSansBold
+StartButton.TextSize = 18
+StartButton.Parent = MainFrame
+-- Stop Fling Button
 local StopButton = Instance.new("TextButton")
-StopButton.Name = "StopButton"
+StopButton.Position = UDim2.new(0.5, 5, 0, 280)
+StopButton.Size = UDim2.new(0.5, -15, 0, 40)
 StopButton.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
 StopButton.BorderSizePixel = 0
-StopButton.Position = UDim2.new(0.5, 5, 0, 240)
-StopButton.Size = UDim2.new(0.5, -15, 0, 40)
-StopButton.Font = Enum.Font.SourceSansBold
 StopButton.Text = "STOP FLING"
 StopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-StopButton.TextSize = 16
+StopButton.Font = Enum.Font.SourceSansBold
+StopButton.TextSize = 18
 StopButton.Parent = MainFrame
--- Select All Button
+-- Select/Deselect Buttons
 local SelectAllButton = Instance.new("TextButton")
-SelectAllButton.Name = "SelectAllButton"
+SelectAllButton.Position = UDim2.new(0, 10, 0, 330)
+SelectAllButton.Size = UDim2.new(0.5, -15, 0, 30)
 SelectAllButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 SelectAllButton.BorderSizePixel = 0
-SelectAllButton.Position = UDim2.new(0, 10, 0, 290)
-SelectAllButton.Size = UDim2.new(0.5, -15, 0, 30)
-SelectAllButton.Font = Enum.Font.SourceSans
 SelectAllButton.Text = "SELECT ALL"
 SelectAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SelectAllButton.Font = Enum.Font.SourceSans
 SelectAllButton.TextSize = 14
 SelectAllButton.Parent = MainFrame
--- Deselect All Button
 local DeselectAllButton = Instance.new("TextButton")
-DeselectAllButton.Name = "DeselectAllButton"
+DeselectAllButton.Position = UDim2.new(0.5, 5, 0, 330)
+DeselectAllButton.Size = UDim2.new(0.5, -15, 0, 30)
 DeselectAllButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 DeselectAllButton.BorderSizePixel = 0
-DeselectAllButton.Position = UDim2.new(0.5, 5, 0, 290)
-DeselectAllButton.Size = UDim2.new(0.5, -15, 0, 30)
-DeselectAllButton.Font = Enum.Font.SourceSans
 DeselectAllButton.Text = "DESELECT ALL"
 DeselectAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+DeselectAllButton.Font = Enum.Font.SourceSans
 DeselectAllButton.TextSize = 14
 DeselectAllButton.Parent = MainFrame
 -- Variables
-local selectedPlayers = {}
-local playerCheckboxes = {}
-local flingActive = false
-local flingLoopConnection = nil
--- Character setup for flinging
-local function setupCharacter()
-    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
-    
-    -- Important configurations for effective flinging
-    if humanoid then
-        humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-    end
-    
-    -- Make character parts non-collidable
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
-    end
-    
-    return character
-end
--- Utility function to get player object by UserId
-local function getPlayerById(userId)
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.UserId == userId then
-            return player
-        end
-    end
-    return nil
-end
--- Function to populate player list
-local function refreshPlayerList()
-    -- Clear existing entries
-    for _, child in pairs(PlayerScroll:GetChildren()) do
+local SelectedTargets = {}
+local PlayerCheckboxes = {}
+local FlingActive = false
+local FlingConnection = nil
+getgenv().OldPos = nil
+getgenv().FPDH = workspace.FallenPartsDestroyHeight
+-- Function to update player list
+local function RefreshPlayerList()
+    -- Clear existing player entries
+    for _, child in pairs(PlayerScrollFrame:GetChildren()) do
         child:Destroy()
     end
-    playerCheckboxes = {}
+    PlayerCheckboxes = {}
     
-    -- Get and sort player list
-    local playerList = Players:GetPlayers()
-    table.sort(playerList, function(a, b) return a.Name:lower() < b.Name:lower() end)
+    -- Get players and sort them
+    local PlayerList = Players:GetPlayers()
+    table.sort(PlayerList, function(a, b) return a.Name:lower() < b.Name:lower() end)
     
-    -- Create player entries
-    local yPos = 5
-    for _, player in ipairs(playerList) do
-        if player ~= LocalPlayer then
-            -- Player entry container
-            local playerEntry = Instance.new("Frame")
-            playerEntry.Name = player.Name .. "Entry"
-            playerEntry.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            playerEntry.BorderSizePixel = 0
-            playerEntry.Position = UDim2.new(0, 0, 0, yPos)
-            playerEntry.Size = UDim2.new(1, 0, 0, 30)
-            playerEntry.Parent = PlayerScroll
+    -- Create entries for each player
+    local yPosition = 5
+    for _, player in ipairs(PlayerList) do
+        if player ~= Player then -- Don't include yourself
+            -- Create player entry frame
+            local PlayerEntry = Instance.new("Frame")
+            PlayerEntry.Size = UDim2.new(1, -10, 0, 30)
+            PlayerEntry.Position = UDim2.new(0, 5, 0, yPosition)
+            PlayerEntry.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            PlayerEntry.BorderSizePixel = 0
+            PlayerEntry.Parent = PlayerScrollFrame
             
-            -- Checkbox
-            local checkbox = Instance.new("TextButton")
-            checkbox.Name = "Checkbox"
-            checkbox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-            checkbox.BorderSizePixel = 0
-            checkbox.Position = UDim2.new(0, 5, 0.5, -10)
-            checkbox.Size = UDim2.new(0, 20, 0, 20)
-            checkbox.Text = ""
-            checkbox.Parent = playerEntry
+            -- Create checkbox
+            local Checkbox = Instance.new("TextButton")
+            Checkbox.Size = UDim2.new(0, 24, 0, 24)
+            Checkbox.Position = UDim2.new(0, 3, 0.5, -12)
+            Checkbox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            Checkbox.BorderSizePixel = 0
+            Checkbox.Text = ""
+            Checkbox.Parent = PlayerEntry
             
-            -- Check mark (initially invisible)
-            local checkmark = Instance.new("TextLabel")
-            checkmark.Name = "Checkmark"
-            checkmark.BackgroundTransparency = 1
-            checkmark.Size = UDim2.new(1, 0, 1, 0)
-            checkmark.Font = Enum.Font.SourceSansBold
-            checkmark.Text = "✓"
-            checkmark.TextColor3 = Color3.fromRGB(0, 255, 0)
-            checkmark.TextSize = 18
-            checkmark.Visible = selectedPlayers[player.UserId] ~= nil
-            checkmark.Parent = checkbox
+            -- Checkmark (initially invisible)
+            local Checkmark = Instance.new("TextLabel")
+            Checkmark.Size = UDim2.new(1, 0, 1, 0)
+            Checkmark.BackgroundTransparency = 1
+            Checkmark.Text = "✓"
+            Checkmark.TextColor3 = Color3.fromRGB(0, 255, 0)
+            Checkmark.TextSize = 18
+            Checkmark.Font = Enum.Font.SourceSansBold
+            Checkmark.Visible = SelectedTargets[player.Name] ~= nil
+            Checkmark.Parent = Checkbox
             
-            -- Player name
-            local nameLabel = Instance.new("TextLabel")
-            nameLabel.Name = "NameLabel"
-            nameLabel.BackgroundTransparency = 1
-            nameLabel.Position = UDim2.new(0, 35, 0, 0)
-            nameLabel.Size = UDim2.new(1, -40, 1, 0)
-            nameLabel.Font = Enum.Font.SourceSans
-            nameLabel.Text = player.Name
-            nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-            nameLabel.TextSize = 16
-            nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-            nameLabel.Parent = playerEntry
+            -- Player name label
+            local NameLabel = Instance.new("TextLabel")
+            NameLabel.Size = UDim2.new(1, -35, 1, 0)
+            NameLabel.Position = UDim2.new(0, 30, 0, 0)
+            NameLabel.BackgroundTransparency = 1
+            NameLabel.Text = player.Name
+            NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            NameLabel.TextSize = 16
+            NameLabel.Font = Enum.Font.SourceSans
+            NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+            NameLabel.Parent = PlayerEntry
             
-            -- Make the whole entry clickable
-            local clickArea = Instance.new("TextButton")
-            clickArea.BackgroundTransparency = 1
-            clickArea.Size = UDim2.new(1, 0, 1, 0)
-            clickArea.ZIndex = 2
-            clickArea.Text = ""
-            clickArea.Parent = playerEntry
+            -- Make entire entry clickable
+            local ClickArea = Instance.new("TextButton")
+            ClickArea.Size = UDim2.new(1, 0, 1, 0)
+            ClickArea.BackgroundTransparency = 1
+            ClickArea.Text = ""
+            ClickArea.ZIndex = 2
+            ClickArea.Parent = PlayerEntry
             
-            -- Click handler
-            clickArea.MouseButton1Click:Connect(function()
-                if selectedPlayers[player.UserId] then
-                    selectedPlayers[player.UserId] = nil
-                    checkmark.Visible = false
+            -- Selection toggle on click
+            ClickArea.MouseButton1Click:Connect(function()
+                if SelectedTargets[player.Name] then
+                    SelectedTargets[player.Name] = nil
+                    Checkmark.Visible = false
                 else
-                    selectedPlayers[player.UserId] = player.UserId -- Store just the ID
-                    checkmark.Visible = true
+                    SelectedTargets[player.Name] = player
+                    Checkmark.Visible = true
                 end
-                updateStatus()
+                
+                UpdateStatus()
             end)
             
-            -- Store reference
-            playerCheckboxes[player.UserId] = {
-                entry = playerEntry,
-                checkmark = checkmark
+            -- Store reference to this player's UI
+            PlayerCheckboxes[player.Name] = {
+                Entry = PlayerEntry,
+                Checkmark = Checkmark
             }
             
-            yPos = yPos + 35
+            yPosition = yPosition + 35
         end
     end
     
-    -- Adjust scroll frame canvas size
-    PlayerScroll.CanvasSize = UDim2.new(0, 0, 0, yPos + 5)
+    -- Update scrollframe canvas size
+    PlayerScrollFrame.CanvasSize = UDim2.new(0, 0, 0, yPosition + 5)
 end
--- Count selected players
-local function countSelectedPlayers()
+-- Count selected targets
+local function CountSelectedTargets()
     local count = 0
-    for _ in pairs(selectedPlayers) do
+    for _ in pairs(SelectedTargets) do
         count = count + 1
     end
     return count
 end
 -- Update status display
-local function updateStatus()
-    local count = countSelectedPlayers()
-    if flingActive then
-        StatusLabel.Text = "Flinging " .. count .. " player(s)"
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+local function UpdateStatus()
+    local count = CountSelectedTargets()
+    if FlingActive then
+        StatusLabel.Text = "Flinging " .. count .. " target(s)"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
     else
-        StatusLabel.Text = count .. " player(s) selected"
+        StatusLabel.Text = count .. " target(s) selected" 
         StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     end
 end
--- Select/Deselect all players
-local function toggleAllPlayers(select)
+-- Function to select/deselect all players
+local function ToggleAllPlayers(select)
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            local checkbox = playerCheckboxes[player.UserId]
-            if checkbox then
+        if player ~= Player then
+            local checkboxData = PlayerCheckboxes[player.Name]
+            if checkboxData then
                 if select then
-                    selectedPlayers[player.UserId] = player.UserId
-                    checkbox.checkmark.Visible = true
+                    SelectedTargets[player.Name] = player
+                    checkboxData.Checkmark.Visible = true
                 else
-                    selectedPlayers[player.UserId] = nil
-                    checkbox.checkmark.Visible = false
+                    SelectedTargets[player.Name] = nil
+                    checkboxData.Checkmark.Visible = false
                 end
             end
         end
     end
-    updateStatus()
+    
+    UpdateStatus()
 end
--- EFFECTIVE FLING MECHANISM
-local function flingPlayer(targetPlayer)
-    -- Skip if player doesn't exist or has no character
-    if not targetPlayer or not targetPlayer.Character then return end
+-- Show notification
+local function Message(Title, Text, Time)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = Title,
+        Text = Text,
+        Duration = Time or 5
+    })
+end
+-- The fling function from zqyDSUWX
+local function SkidFling(TargetPlayer)
+    local Character = Player.Character
+    local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+    local RootPart = Humanoid and Humanoid.RootPart
+    local TCharacter = TargetPlayer.Character
+    if not TCharacter then return end
     
-    local character = LocalPlayer.Character
-    if not character then return end
-    
-    local root = character:FindFirstChild("HumanoidRootPart")
-    local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-    
-    if not root or not targetRoot then return end
-    
-    -- Get the target's velocity
-    local targetVelocity = targetRoot.Velocity
-    
-    -- SUPER FLING: Create extremely powerful physics forces
-    
-    -- First, teleport to target
-    local oldPos = root.CFrame
-    root.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 0.01) -- Position slightly offset
-    
-    -- Apply a massive velocity
-    for i = 1, 3 do  -- Multiple attempts for more reliable flinging
-        local bodyVelocity = Instance.new("BodyVelocity")
-        bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        bodyVelocity.P = math.huge
-        
-        -- We create a randomized but very powerful velocity
-        local power = 9999999
-        local randomDir = Vector3.new(
-            math.random(-10, 10), 
-            math.random(5, 10), 
-            math.random(-10, 10)
-        ).Unit * power
-        
-        bodyVelocity.Velocity = randomDir
-        bodyVelocity.Parent = targetRoot
-        
-        -- Also add spin for more dramatic effect
-        local bodyAngular = Instance.new("BodyAngularVelocity")
-        bodyAngular.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-        bodyAngular.P = math.huge
-        bodyAngular.AngularVelocity = Vector3.new(
-            math.random(-30, 30), 
-            math.random(-30, 30), 
-            math.random(-30, 30)
-        )
-        bodyAngular.Parent = targetRoot
-        
-        -- Remove the forces quickly to prevent the game from compensating
-        game:GetService("Debris"):AddItem(bodyVelocity, 0.1)
-        game:GetService("Debris"):AddItem(bodyAngular, 0.1)
+    local THumanoid
+    local TRootPart
+    local THead
+    local Accessory
+    local Handle
+    if TCharacter:FindFirstChildOfClass("Humanoid") then
+        THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
     end
-    
-    -- After flinging, teleport back to original position
-    root.CFrame = oldPos
+    if THumanoid and THumanoid.RootPart then
+        TRootPart = THumanoid.RootPart
+    end
+    if TCharacter:FindFirstChild("Head") then
+        THead = TCharacter.Head
+    end
+    if TCharacter:FindFirstChildOfClass("Accessory") then
+        Accessory = TCharacter:FindFirstChildOfClass("Accessory")
+    end
+    if Accessory and Accessory:FindFirstChild("Handle") then
+        Handle = Accessory.Handle
+    end
+    if Character and Humanoid and RootPart then
+        if RootPart.Velocity.Magnitude < 50 then
+            getgenv().OldPos = RootPart.CFrame
+        end
+        
+        if THumanoid and THumanoid.Sit then
+            return Message("Error", TargetPlayer.Name .. " is sitting", 2)
+        end
+        
+        if THead then
+            workspace.CurrentCamera.CameraSubject = THead
+        elseif Handle then
+            workspace.CurrentCamera.CameraSubject = Handle
+        elseif THumanoid and TRootPart then
+            workspace.CurrentCamera.CameraSubject = THumanoid
+        end
+        
+        if not TCharacter:FindFirstChildWhichIsA("BasePart") then
+            return
+        end
+        
+        local FPos = function(BasePart, Pos, Ang)
+            RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
+            Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
+            RootPart.Velocity = Vector3.new(9e7, 9e7 * 10, 9e7)
+            RootPart.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+        end
+        
+        local SFBasePart = function(BasePart)
+            local TimeToWait = 2
+            local Time = tick()
+            local Angle = 0
+            repeat
+                if RootPart and THumanoid then
+                    if BasePart.Velocity.Magnitude < 50 then
+                        Angle = Angle + 100
+                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0 ,0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0 ,0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection, CFrame.Angles(math.rad(Angle),0 ,0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection, CFrame.Angles(math.rad(Angle), 0, 0))
+                        task.wait()
+                    else
+                        FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, -1.5, -THumanoid.WalkSpeed), CFrame.Angles(0, 0, 0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+                        task.wait()
+                        
+                        FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
+                        task.wait()
+                    end
+                end
+            until Time + TimeToWait < tick() or not FlingActive
+        end
+        
+        workspace.FallenPartsDestroyHeight = 0/0
+        
+        local BV = Instance.new("BodyVelocity")
+        BV.Parent = RootPart
+        BV.Velocity = Vector3.new(0, 0, 0)
+        BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        
+        Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+        
+        if TRootPart then
+            SFBasePart(TRootPart)
+        elseif THead then
+            SFBasePart(THead)
+        elseif Handle then
+            SFBasePart(Handle)
+        else
+            return Message("Error", TargetPlayer.Name .. " has no valid parts", 2)
+        end
+        
+        BV:Destroy()
+        Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        workspace.CurrentCamera.CameraSubject = Humanoid
+        
+        -- Reset character position
+        if getgenv().OldPos then
+            repeat
+                RootPart.CFrame = getgenv().OldPos * CFrame.new(0, .5, 0)
+                Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, .5, 0))
+                Humanoid:ChangeState("GettingUp")
+                for _, part in pairs(Character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.Velocity, part.RotVelocity = Vector3.new(), Vector3.new()
+                    end
+                end
+                task.wait()
+            until (RootPart.Position - getgenv().OldPos.p).Magnitude < 25
+            workspace.FallenPartsDestroyHeight = getgenv().FPDH
+        end
+    else
+        return Message("Error", "Your character is not ready", 2)
+    end
 end
--- Start the fling loop
-local function startFlingLoop()
-    if flingActive then return end
+-- Start flinging selected targets
+local function StartFling()
+    if FlingActive then return end
     
-    if countSelectedPlayers() == 0 then
-        StatusLabel.Text = "No players selected!"
+    local count = CountSelectedTargets()
+    if count == 0 then
+        StatusLabel.Text = "No targets selected!"
         wait(1)
-        updateStatus()
+        StatusLabel.Text = "Select targets to fling"
         return
     end
     
-    -- Set up character for flinging
-    setupCharacter()
+    FlingActive = true
+    UpdateStatus()
+    Message("Started", "Flinging " .. count .. " targets", 2)
     
-    -- Start flinging
-    flingActive = true
-    updateStatus()
-    
-    flingLoopConnection = RunService.Heartbeat:Connect(function()
-        -- Process all selected players
-        for userId in pairs(selectedPlayers) do
-            local player = getPlayerById(userId)
-            if player then
-                flingPlayer(player)
-            else
-                -- Remove player from selection if they've left
-                selectedPlayers[userId] = nil
-                if playerCheckboxes[userId] then
-                    playerCheckboxes[userId].checkmark.Visible = false
+    -- Start flinger in separate thread
+    spawn(function()
+        while FlingActive do
+            local validTargets = {}
+            
+            -- Process all targets first to determine which are valid
+            for name, player in pairs(SelectedTargets) do
+                if player and player.Parent then
+                    validTargets[name] = player
+                else
+                    -- Remove players who left
+                    SelectedTargets[name] = nil
+                    local checkbox = PlayerCheckboxes[name]
+                    if checkbox then
+                        checkbox.Checkmark.Visible = false
+                    end
                 end
             end
-        end
-    end)
-    
-    -- Monitor character changes to re-setup as needed
-    LocalPlayer.CharacterAdded:Connect(function()
-        if flingActive then
-            wait(0.5) -- Wait for character to initialize
-            setupCharacter()
+            
+            -- Then attempt to fling each valid target
+            for _, player in pairs(validTargets) do
+                if FlingActive then
+                    SkidFling(player)
+                    -- Brief wait between targets to allow movement to reset
+                    wait(0.1)
+                else
+                    break
+                end
+            end
+            
+            -- Update status periodically
+            UpdateStatus()
+            
+            -- Wait a moment before starting next fling cycle
+            wait(0.5)
         end
     end)
 end
--- Stop the fling loop
-local function stopFlingLoop()
-    if not flingActive then return end
+-- Stop flinging
+local function StopFling()
+    if not FlingActive then return end
     
-    flingActive = false
+    FlingActive = false
     
-    if flingLoopConnection then
-        flingLoopConnection:Disconnect()
-        flingLoopConnection = nil
-    end
-    
-    -- Restore character to normal
-    local character = LocalPlayer.Character
-    if character and character:FindFirstChild("Humanoid") then
-        character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-    end
-    
-    updateStatus()
+    UpdateStatus()
+    Message("Stopped", "Fling has been stopped", 2)
 end
 -- Set up button connections
-FlingButton.MouseButton1Click:Connect(startFlingLoop)
-StopButton.MouseButton1Click:Connect(stopFlingLoop)
-SelectAllButton.MouseButton1Click:Connect(function() toggleAllPlayers(true) end)
-DeselectAllButton.MouseButton1Click:Connect(function() toggleAllPlayers(false) end)
+StartButton.MouseButton1Click:Connect(StartFling)
+StopButton.MouseButton1Click:Connect(StopFling)
+SelectAllButton.MouseButton1Click:Connect(function() ToggleAllPlayers(true) end)
+DeselectAllButton.MouseButton1Click:Connect(function() ToggleAllPlayers(false) end)
 CloseButton.MouseButton1Click:Connect(function()
-    stopFlingLoop()
+    StopFling()
     ScreenGui:Destroy()
 end)
--- Player added/removed events
-Players.PlayerAdded:Connect(refreshPlayerList)
+-- Handle player joining/leaving
+Players.PlayerAdded:Connect(RefreshPlayerList)
 Players.PlayerRemoving:Connect(function(player)
-    if selectedPlayers[player.UserId] then
-        selectedPlayers[player.UserId] = nil
+    if SelectedTargets[player.Name] then
+        SelectedTargets[player.Name] = nil
     end
-    refreshPlayerList()
-    updateStatus()
+    RefreshPlayerList()
+    UpdateStatus()
 end)
--- Initial setup
-refreshPlayerList()
-updateStatus()
--- Success notification
-print("KILASIK's Ultimate Fling GUI loaded and ready!")
+-- Initialize
+RefreshPlayerList()
+UpdateStatus()
+-- Success message
+Message("Loaded", "KILASIK's Multi-Target Fling GUI loaded!", 3)
